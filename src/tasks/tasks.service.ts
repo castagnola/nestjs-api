@@ -14,16 +14,20 @@ export class TasksService {
     @InjectRepository(Task) private tasksRepository: Repository<Task>,
   ) {}
 
-  getTasks = async (filterDto: GetTasksFilterDto): Promise<Task[]> => {
+  getTasks = async (
+    filterDto: GetTasksFilterDto,
+    user: User,
+  ): Promise<Task[]> => {
     const { status, search } = filterDto;
     const query = this.tasksRepository.createQueryBuilder('task');
 
+    query.where({ user });
     if (status) {
       query.andWhere('taks.status = :status', { status: 'OPEN' });
     }
     if (search) {
       query.andWhere(
-        'task.title LIKE :search OR task.description LIKE :search',
+        'LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search)',
         { search: `%${search}%` },
       );
     }
