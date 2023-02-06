@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from 'src/db/task.entity';
 import { User } from 'src/db/user.entity';
@@ -31,10 +35,13 @@ export class TasksService {
         { search: `%${search}%` },
       );
     }
-
-    const tasks = await query.getMany();
-
-    return tasks;
+    try {
+      const tasks = await query.getMany();
+      return tasks;
+    } catch (error) {
+      //Log
+      throw new InternalServerErrorException();
+    }
   };
 
   getTaskById = async (id: string, user: User): Promise<Task> => {
